@@ -77,6 +77,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       items: [
         { path: '/admin/subscriptions', icon: CreditCard, label: 'Subscriptions', count: 2 },
         { path: '/admin/credits', icon: Coins, label: 'Credits', count: 0 },
+        { path: '/admin/escrow', icon: Shield, label: 'Escrow Manager', count: 0 },
       ]
     },
     {

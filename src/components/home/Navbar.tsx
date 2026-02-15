@@ -132,14 +132,24 @@ const Navbar = () => {
           <div className="flex items-center gap-3 lg:gap-4">
             {isLoggedIn ? (
               <>
-                {/* Add Patient Button - تصميم أنيق */}
-                <Link
-                  to="/add-patient"
-                  className="hidden lg:flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-semibold text-sm rounded-xl hover:shadow-lg hover:shadow-primary/25"
-                >
-                  <FaStethoscope className="w-4 h-4" />
-                  <span>Add Patient</span>
-                </Link>
+                {/* Role-based Action Button */}
+                {user?.role === 'Doctor' ? (
+                  <Link
+                    to="/add-patient"
+                    className="hidden lg:flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-semibold text-sm rounded-xl hover:shadow-lg hover:shadow-primary/25"
+                  >
+                    <FaStethoscope className="w-4 h-4" />
+                    <span>Add Patient</span>
+                  </Link>
+                ) : (
+                  <Link
+                    to="/patient/consultations"
+                    className="hidden lg:flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white font-semibold text-sm rounded-xl hover:shadow-lg hover:shadow-slate-900/25 transition-all"
+                  >
+                    <FaComments className="w-4 h-4" />
+                    <span>My Chats</span>
+                  </Link>
+                )}
 
                 {/* Profile Dropdown - تصميم احترافي */}
                 <div className="relative profile-dropdown-container">
@@ -183,22 +193,35 @@ const Navbar = () => {
                           <FaUserCircle className="w-4 h-4 text-gray-400" />
                           <span>Profile</span>
                         </Link>
-                        <Link
-                          to="/add-patient"
-                          className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 transition-all duration-200 hover:text-primary hover:bg-primary/5"
-                          onClick={() => setProfileDropdown(false)}
-                        >
-                          <FaStethoscope className="w-4 h-4 text-gray-400" />
-                          <span>Add Patient</span>
-                        </Link>
-                        <Link
-                          to="/patients"
-                          className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 transition-all duration-200 hover:text-primary hover:bg-primary/5"
-                          onClick={() => setProfileDropdown(false)}
-                        >
-                          <FaUsers className="w-4 h-4 text-gray-400" />
-                          <span>All Patients</span>
-                        </Link>
+                        {user?.role === 'Doctor' ? (
+                          <>
+                            <Link
+                              to="/add-patient"
+                              className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 transition-all duration-200 hover:text-primary hover:bg-primary/5"
+                              onClick={() => setProfileDropdown(false)}
+                            >
+                              <FaStethoscope className="w-4 h-4 text-gray-400" />
+                              <span>Add Patient</span>
+                            </Link>
+                            <Link
+                              to="/patients"
+                              className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 transition-all duration-200 hover:text-primary hover:bg-primary/5"
+                              onClick={() => setProfileDropdown(false)}
+                            >
+                              <FaUsers className="w-4 h-4 text-gray-400" />
+                              <span>All Patients</span>
+                            </Link>
+                          </>
+                        ) : (
+                          <Link
+                            to="/patient/consultations"
+                            className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 transition-all duration-200 hover:text-primary hover:bg-primary/5"
+                            onClick={() => setProfileDropdown(false)}
+                          >
+                            <FaComments className="w-4 h-4 text-gray-400" />
+                            <span>My Consultations</span>
+                          </Link>
+                        )}
                         <Link
                           to="/settings"
                           className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 transition-all duration-200 hover:text-primary hover:bg-primary/5"
@@ -285,14 +308,35 @@ const Navbar = () => {
               <div className="pt-4 mt-4 space-y-2 border-t border-gray-200/60">
                 {isLoggedIn ? (
                   <>
-                    <Link
-                      to="/add-patient"
-                      className="flex items-center justify-center gap-2 w-full px-4 py-3.5 bg-primary text-white font-semibold text-sm rounded-xl transition-all duration-300 active:scale-95"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <FaStethoscope className="w-4 h-4" />
-                      <span>Add Patient</span>
-                    </Link>
+                    {user?.role === 'Doctor' ? (
+                      <>
+                        <Link
+                          to="/add-patient"
+                          className="flex items-center justify-center gap-2 w-full px-4 py-3.5 bg-primary text-white font-semibold text-sm rounded-xl transition-all duration-300 active:scale-95"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          <FaStethoscope className="w-4 h-4" />
+                          <span>Add Patient</span>
+                        </Link>
+                        <Link
+                          to="/patients"
+                          className="flex items-center gap-3 px-4 py-3.5 text-gray-700 font-medium text-sm rounded-xl transition-all duration-200 hover:bg-gray-50/80"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          <FaUsers className="w-4 h-4" />
+                          <span>All Patients</span>
+                        </Link>
+                      </>
+                    ) : (
+                      <Link
+                        to="/patient/consultations"
+                        className="flex items-center justify-center gap-2 w-full px-4 py-3.5 bg-slate-900 text-white font-semibold text-sm rounded-xl transition-all duration-300 active:scale-95"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <FaComments className="w-4 h-4" />
+                        <span>My Consultations</span>
+                      </Link>
+                    )}
                     <Link
                       to="/profile"
                       className="flex items-center gap-3 px-4 py-3.5 text-gray-700 font-medium text-sm rounded-xl transition-all duration-200 hover:bg-gray-50/80"
@@ -300,14 +344,6 @@ const Navbar = () => {
                     >
                       <FaUserCircle className="w-4 h-4" />
                       <span>Profile</span>
-                    </Link>
-                    <Link
-                      to="/patients"
-                      className="flex items-center gap-3 px-4 py-3.5 text-gray-700 font-medium text-sm rounded-xl transition-all duration-200 hover:bg-gray-50/80"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <FaUsers className="w-4 h-4" />
-                      <span>All Patients</span>
                     </Link>
                     <button
                       onClick={() => {

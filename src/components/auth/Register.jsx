@@ -26,12 +26,13 @@ const Register = () => {
     IdentificationImage: null,
     CriminalRecordImage: null,
     DrugTestImage: null,
-    termsAccepted: false
+    termsAccepted: false,
+    selectedRole: '' // 'doctor' or 'patient'
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(0); // Start at 0 for role selection
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [pageLoaded, setPageLoaded] = useState(false);
@@ -40,6 +41,13 @@ const Register = () => {
   
   // const { login } = useAuth(); // Not logging in directly anymore
   const navigate = useNavigate();
+
+  const handleRoleSelect = (role) => {
+    setFormData(prev => ({ ...prev, selectedRole: role }));
+    setCurrentStep(1);
+    // Reset steps if switching roles
+    setErrors({});
+  };
 
   const governoratesAndCenters = {
     "Cairo": "Cairo Educational Hospital - Testing Unit",
@@ -131,15 +139,19 @@ const Register = () => {
       if (formData.Password !== formData.ConfirmPassword) {
         newErrors.ConfirmPassword = 'Passwords do not match';
       }
+      if (formData.selectedRole === 'patient' && !formData.termsAccepted) {
+        newErrors.termsAccepted = 'Required';
+      }
     } else if (step === 2) {
       if (!formData.PhoneNumber) newErrors.PhoneNumber = 'Phone is required';
       if (!formData.DateofBirth) newErrors.DateofBirth = 'Date of birth is required';
       if (!formData.Gender) newErrors.Gender = 'Select gender';
-      if (!formData.Specialization) newErrors.Specialization = 'Specialization is required';
+      if (formData.selectedRole === 'doctor' && !formData.Specialization) newErrors.Specialization = 'Specialization is required';
     } else if (step === 3) {
-      if (!formData.Address || !formData.Address.trim()) newErrors.Address = 'Street is required';
-      if (!formData.City || !formData.City.trim()) newErrors.City = 'City is required';
-      // if (!formData.identityFile) newErrors.identityFile = 'Identity document is required'; 
+      if (formData.selectedRole === 'doctor') {
+        if (!formData.Address || !formData.Address.trim()) newErrors.Address = 'Street is required';
+        if (!formData.City || !formData.City.trim()) newErrors.City = 'City is required';
+      }
       if (!formData.termsAccepted) newErrors.termsAccepted = 'Required';
     }
 
@@ -154,10 +166,14 @@ const Register = () => {
   };
 
   const handlePrev = () => {
-    setCurrentStep(prev => prev - 1);
+    if (currentStep === 1) {
+      setCurrentStep(0); // Go back to role selection
+    } else {
+      setCurrentStep(prev => prev - 1);
+    }
   };
 
-  const { register } = useAuth(); // Get register from context
+  const { register, login } = useAuth(); // Get register and login from context
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -194,9 +210,19 @@ const Register = () => {
         const response = await register(data);
         
         if (response.succeeded) {
-             toast.success(response.message || "Registration successful! Please wait for admin approval.");
+             const successMsg = formData.selectedRole === 'patient' 
+                ? "Registration successful! Welcome to Thyro Carex."
+                : "Registration successful! Please wait for admin approval.";
+             toast.success(response.message || successMsg);
+             
+             // Auto-login for patients - skip success screen
+             if (formData.selectedRole === 'patient') {
+                await login(formData.Email, formData.Password);
+                navigate('/patient/home');
+                return;
+             }
+             
              setIsSuccess(true);
-             // navigate('/login'); 
         } else {
              setErrors({ general: response.message || 'Registration failed' });
              toast.error(response.message || 'Registration failed');
@@ -213,6 +239,78 @@ const Register = () => {
 
   const renderStepIndicator = () => null; // Removed, specific indicators now in header
 
+  const renderStep0 = () => (
+    <div className="space-y-8 animate-fadeIn transition-all duration-500">
+      <div className="text-center mb-10">
+        <h3 className="text-2xl font-black text-gray-900 mb-3">Join Thyro Carex</h3>
+        <p className="text-sm font-medium text-gray-500 tracking-wide">Select how you want to use the platform</p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+        {/* Patient Option */}
+        <button
+          type="button"
+          onClick={() => handleRoleSelect('patient')}
+          className={`group relative flex flex-col items-center p-8 bg-white border-2 rounded-[2.5rem] transition-all duration-500 hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-2 overflow-hidden ${
+            formData.selectedRole === 'patient' 
+            ? 'border-primary ring-4 ring-primary/10' 
+            : 'border-gray-50'
+          }`}
+        >
+          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700"></div>
+          
+          <div className={`relative z-10 w-20 h-20 rounded-3xl flex items-center justify-center mb-6 transition-all duration-500 shadow-sm ${
+            formData.selectedRole === 'patient' ? 'bg-primary text-white scale-110' : 'bg-gray-50 text-gray-400 group-hover:bg-primary group-hover:text-white group-hover:rotate-6'
+          }`}>
+            <FaUser className="w-10 h-10" />
+          </div>
+          
+          <h4 className="relative z-10 text-xl font-black text-gray-900 mb-2">I'm a Patient</h4>
+          <p className="relative z-10 text-sm text-gray-500 text-center font-medium leading-relaxed">
+            Browse specialized doctors, get online diagnoses, and track your health.
+          </p>
+          
+          <div className="mt-8 flex items-center gap-2 text-primary font-black text-xs uppercase tracking-widest transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">
+             Choose Patient
+            <div className="w-5 h-5 bg-primary text-white rounded-full flex items-center justify-center">
+              <FaArrowLeft className="w-3 h-3 rotate-180" />
+            </div>
+          </div>
+        </button>
+
+        {/* Doctor Option */}
+        <button
+          type="button"
+          onClick={() => handleRoleSelect('doctor')}
+          className={`group relative flex flex-col items-center p-8 bg-white border-2 rounded-[2.5rem] transition-all duration-500 hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-2 overflow-hidden ${
+            formData.selectedRole === 'doctor' 
+            ? 'border-primary ring-4 ring-primary/10' 
+            : 'border-gray-50'
+          }`}
+        >
+          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700"></div>
+          
+          <div className={`relative z-10 w-20 h-20 rounded-3xl flex items-center justify-center mb-6 transition-all duration-500 shadow-sm ${
+            formData.selectedRole === 'doctor' ? 'bg-primary text-white scale-110' : 'bg-gray-50 text-gray-400 group-hover:bg-primary group-hover:text-white group-hover:-rotate-6'
+          }`}>
+            <FaStethoscope className="w-10 h-10" />
+          </div>
+          
+          <h4 className="relative z-10 text-xl font-black text-gray-900 mb-2">I'm a Doctor</h4>
+          <p className="relative z-10 text-sm text-gray-500 text-center font-medium leading-relaxed">
+            Manage your practice, consult online, and join our professional network.
+          </p>
+          
+          <div className="mt-8 flex items-center gap-2 text-primary font-black text-xs uppercase tracking-widest transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">
+             Choose Doctor
+            <div className="w-5 h-5 bg-primary text-white rounded-full flex items-center justify-center">
+              <FaArrowLeft className="w-3 h-3 rotate-180" />
+            </div>
+          </div>
+        </button>
+      </div>
+    </div>
+  );
 
   const renderStep1 = () => (
     <div className="space-y-4">
@@ -306,6 +404,29 @@ const Register = () => {
           </div>
         </div>
       </div>
+
+      {formData.selectedRole === 'patient' && (
+        <div className="pt-4 border-t border-gray-100 mt-4">
+            <div className="flex items-start">
+            <input
+                id="termsAccepted"
+                name="termsAccepted"
+                type="checkbox"
+                checked={formData.termsAccepted}
+                onChange={handleChange}
+                className="mt-1 w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+            />
+            <label htmlFor="termsAccepted" className="ml-2 text-xs text-gray-600 leading-relaxed">
+                I agree to the 
+                <button type="button" onClick={() => setShowTermsModal(true)} className="mx-1 font-semibold text-primary hover:underline">Terms</button>
+                and 
+                <button type="button" onClick={() => setShowPrivacyModal(true)} className="mx-1 font-semibold text-primary hover:underline">Privacy Policy</button>
+                *
+            </label>
+            </div>
+            {errors.termsAccepted && <p className="mt-1 text-xs text-red-500">You must accept the terms</p>}
+        </div>
+      )}
     </div>
   );
 
@@ -655,21 +776,25 @@ const Register = () => {
                 <div>
                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Registration Successful!</h2>
                    <p className="text-gray-600 max-w-sm mx-auto">
-                      Your account has been created and is currently under review by our administrators.
+                      {formData.selectedRole === 'patient' 
+                        ? "Your account has been created. You can now access all patient features."
+                        : "Your account has been created and is currently under review by our administrators."}
                    </p>
                 </div>
                 
-                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 w-full max-w-sm">
-                   <p className="text-sm text-blue-800 font-medium">
-                      Please wait for admin approval. You will be notified once your account is active.
-                   </p>
-                </div>
+                {formData.selectedRole === 'doctor' && (
+                  <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 w-full max-w-sm">
+                    <p className="text-sm text-blue-800 font-medium">
+                        Please wait for admin approval. You will be notified once your account is active.
+                    </p>
+                  </div>
+                )}
 
                 <Link 
                    to="/login" 
                    className="w-full max-w-sm px-6 py-3 text-sm font-bold text-white bg-primary rounded-xl hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20 transform transition-all hover:-translate-y-0.5"
                 >
-                   Go to Login
+                   {formData.selectedRole === 'patient' ? 'Enter Platform' : 'Go to Login'}
                 </Link>
              </div>
           ) : (
@@ -687,7 +812,7 @@ const Register = () => {
                             </div>
                             <h1 className="text-[1.5rem] lg:text-[1.7rem] font-bold tracking-tight text-gray-900 leading-tight">
                             <span className="relative font-extrabold text-primary">
-                                Create Account
+                                {currentStep === 0 ? "Join Us" : "Create Account"}
                                 <span className="absolute -bottom-2 left-0 w-full h-[4px] bg-gradient-to-r from-primary via-primary/70 to-transparent rounded-full transform -translate-y-1"></span>
                             </span>
                             <span className="ml-2 font-extrabold text-gray-700 block sm:inline sm:ml-2">
@@ -695,66 +820,70 @@ const Register = () => {
                             </span>
                             </h1>
                         </div>
-                        <p className="  text-sm font-medium text-gray-600">
-                            Join our professional medical network
+                         <p className="  text-sm font-medium text-gray-600">
+                            {currentStep === 0 ? "Select your path to better health" : 
+                             formData.selectedRole === 'patient' ? "Complete your medical registration" : `Join our professional doctor network`}
                         </p>
                         </div>
 
                         {/* Step Indicator */}
-                        <div className="hidden sm:block text-right ml-4 mb-2">
-                        <span className="text-sm font-bold text-primary">Step {currentStep}</span>
-                        <span className="text-sm text-gray-400">/3</span>
-                        </div>
+                        {currentStep > 0 && (
+                          <div className="hidden sm:block text-right ml-4 mb-2">
+                            <span className="text-sm font-bold text-primary">Step {currentStep}</span>
+                            <span className="text-sm text-gray-400">/{formData.selectedRole === 'doctor' ? 3 : 1}</span>
+                          </div>
+                        )}
                     </div>
                     
                     {/* Progress Bar */}
-                    <div className="bg-gray-100 h-1.5 w-full rounded-full overflow-hidden mt-4">
-                        <div 
-                        className="h-full bg-primary transition-all duration-500 ease-out rounded-full"
-                        style={{ width: `${(currentStep / 3) * 100}%` }}
-                        ></div>
-                    </div>
+                    {currentStep > 0 && (
+                      <div className="bg-gray-100 h-1.5 w-full rounded-full overflow-hidden mt-4">
+                          <div 
+                          className="h-full bg-primary transition-all duration-500 ease-out rounded-full"
+                          style={{ width: `${(currentStep / (formData.selectedRole === 'doctor' ? 3 : 1)) * 100}%` }}
+                          ></div>
+                      </div>
+                    )}
                 </div>
 
                 {/* Registration Form */}
-                <div className="p-6 bg-white border border-gray-100 shadow-xl shadow-primary/5 rounded-2xl relative">
+                <div className={`p-6 bg-white border border-gray-100 shadow-xl shadow-primary/5 rounded-2xl relative ${currentStep === 0 ? 'border-none shadow-none p-0 bg-transparent' : ''}`}>
                     <form onSubmit={handleSubmit}>
+                    {currentStep === 0 && renderStep0()}
                     {currentStep === 1 && renderStep1()}
-                    {currentStep === 2 && renderStep2()}
-                    {currentStep === 3 && renderStep3()}
+                    {currentStep === 2 && (formData.selectedRole === 'doctor' ? renderStep2() : renderStep3())}
+                    {currentStep === 3 && formData.selectedRole === 'doctor' && renderStep3()}
 
                     {/* Navigation Buttons */}
-                    <div className="flex justify-between mt-8 pt-4 border-t border-gray-50">
-                        {currentStep > 1 ? (
-                        <button
-                            type="button"
-                            onClick={handlePrev}
-                            className="px-5 py-2.5 text-sm font-medium text-gray-600 transition-all border border-gray-200 rounded-xl hover:bg-gray-50 hover:text-gray-900"
-                        >
-                            Back
-                        </button>
-                        ) : (
-                        <div></div> // Spacer
-                        )}
+                    {currentStep > 0 && (
+                      <div className="flex justify-between mt-8 pt-4 border-t border-gray-50">
+                          <button
+                              type="button"
+                              onClick={handlePrev}
+                              className="px-5 py-2.5 text-sm font-medium text-gray-600 transition-all border border-gray-200 rounded-xl hover:bg-gray-50 hover:text-gray-900"
+                          >
+                              {currentStep === 1 ? 'Switch Role' : 'Back'}
+                          </button>
 
-                        {currentStep < 3 ? (
-                        <button
-                            type="button"
-                            onClick={handleNext}
-                            className="px-6 py-2.5 text-sm font-bold text-white bg-primary rounded-xl hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20 transform transition-all hover:-translate-y-0.5"
-                        >
-                            Next Step
-                        </button>
-                        ) : (
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="px-8 py-2.5 text-sm font-bold text-white bg-primary rounded-xl hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20 transform transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {isLoading ? 'Processing...' : 'Complete Registration'}
-                        </button>
-                        )}
-                    </div>
+                           {((formData.selectedRole === 'doctor' && currentStep < 3) || (formData.selectedRole === 'patient' && currentStep < 1)) ? (
+                          <button
+                              type="button"
+                              onClick={handleNext}
+                              className="px-6 py-2.5 text-sm font-bold text-white bg-primary rounded-xl hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20 transform transition-all hover:-translate-y-0.5"
+                          >
+                              Next Step
+                          </button>
+                          ) : (
+                          <button
+                              type="submit"
+                              disabled={isLoading}
+                              className="px-8 py-2.5 text-sm font-bold text-white bg-primary rounded-xl hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20 transform transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                              {isLoading ? 'Processing...' : (formData.selectedRole === 'patient' ? 'Register Now' : 'Complete Registration')}
+                          </button>
+                          )}
+                      </div>
+                    )}
                     </form>
 
                     {/* Login Link */}

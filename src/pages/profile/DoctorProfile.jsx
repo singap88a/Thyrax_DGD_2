@@ -17,8 +17,12 @@ import {
   Target,
   Star,
   TrendingUp,
-  Bell
+  Bell,
+  MessageSquare,
+  ArrowRight,
+  CreditCard
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import doctorService from '../../services/doctorService';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
@@ -41,7 +45,8 @@ const Profile = () => {
     professionalBio: "",
     hospital: "",
     profileImage: null,
-    // Add other fields as necessary from API response
+    onlineConsultation: true,
+    consultationPrice: 350,
   });
   const [loading, setLoading] = useState(true);
 
@@ -216,6 +221,7 @@ const Profile = () => {
 
   const tabs = [
     { id: 'personal', label: 'Personal Info', icon: User },
+    { id: 'consultation', label: 'Consultation', icon: MessageSquare },
     { id: 'security', label: 'Security', icon: Shield },
     { id: 'statistics', label: 'Analytics', icon: BarChart3 }
   ];
@@ -477,7 +483,77 @@ const Profile = () => {
               </div>
             )}
 
-            {/* Security Tab */}
+            {/* Consultation Tab */}
+            {activeTab === 'consultation' && (
+              <div className="space-y-8 animate-fadeIn">
+                <div>
+                  <h3 className="mb-2 text-2xl font-semibold text-slate-900">Consultation Settings</h3>
+                  <p className="text-slate-600">Configure your online consultation availability and pricing</p>
+                </div>
+
+                <div className="p-8 bg-slate-50 rounded-[2rem] border border-slate-100 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 bg-primary/10 text-primary rounded-2xl flex items-center justify-center">
+                      <MessageSquare className="w-7 h-7" />
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-bold text-slate-900">Online Consultations</h4>
+                      <p className="text-sm text-slate-500">Allow patients to request online diagnoses</p>
+                    </div>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      className="sr-only peer" 
+                      checked={profileData.onlineConsultation}
+                      onChange={(e) => setProfileData({...profileData, onlineConsultation: e.target.checked})}
+                    />
+                    <div className="w-14 h-7 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-7 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary"></div>
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-end">
+                  <div className="space-y-3">
+                    <label className="block text-sm font-bold text-slate-700">Consultation Price (EGP)</label>
+                    <div className="relative group">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">EGP</div>
+                      <input
+                        type="number"
+                        value={profileData.consultationPrice}
+                        onChange={(e) => setProfileData({...profileData, consultationPrice: e.target.value})}
+                        className="w-full pl-16 pr-4 py-4 rounded-xl bg-white border border-slate-200 focus:ring-2 focus:ring-primary focus:border-transparent transition-all font-black text-lg"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 bg-primary/5 rounded-xl border border-primary/10 text-[11px] text-primary leading-relaxed font-medium">
+                    Note: The platform takes a 15% service fee from each consultation. 
+                    You will receive approximately <span className="font-bold">{(profileData.consultationPrice * 0.85).toFixed(0)} EGP</span> per session.
+                  </div>
+                </div>
+
+                <div className="pt-8 border-t border-slate-100 flex flex-col md:flex-row gap-4">
+                  <Link 
+                    to="/doctor/consultations" 
+                    className="flex-1 p-6 bg-slate-900 rounded-2xl text-white hover:shadow-xl transition-all group flex items-center justify-between"
+                  >
+                    <div>
+                      <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Manage Requests</p>
+                      <h4 className="text-xl font-bold">Patient Inquiries</h4>
+                    </div>
+                    <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
+                  </Link>
+
+                  <div className="flex-1 p-6 bg-white border border-slate-200 rounded-2xl hover:shadow-xl transition-all group cursor-pointer flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Total Earned</p>
+                      <h4 className="text-xl font-bold font-black text-emerald-600">2,450 EGP</h4>
+                    </div>
+                    <CreditCard className="w-6 h-6 text-slate-300" />
+                  </div>
+                </div>
+              </div>
+            )}
             {activeTab === 'security' && (
               <div className="space-y-8 animate-fadeIn">
                 <div>

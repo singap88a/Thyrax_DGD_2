@@ -40,19 +40,35 @@ import DoctorRequestDetails from './components/admin/doctors/DoctorRequestDetail
 import ReDiagnosis from './pages/diagnosis/ReDiagnosis';
 import DiagnosisComparison from './pages/diagnosis/DiagnosisComparison';
 import DiagnosisHistory from './pages/diagnosis/DiagnosisHistory';
+import EscrowManager from './components/admin/escrow/EscrowManager';
 import FloatingChatbot from './components/common/FloatingChatbot';
 import GeminiSingap from './pages/GeminiSingap/GeminiSingap';
+
+// Patient Flow Pages
+import PatientHome from './pages/patients/PatientHome';
+import MyConsultations from './pages/patients/MyConsultations';
+import DoctorProfileView from './pages/patients/DoctorProfileView';
+import ConsultationFlow from './components/patients/ConsultationFlow';
+
+// Doctor Consultation Management
+import ConsultationRequests from './pages/profile/ConsultationRequests';
+import ConsultationChat from './pages/profile/ConsultationChat';
 
 function AppContent() {
   const location = useLocation();
   const isDashboard = location.pathname.includes('/dashboard');
   const isAdmin = location.pathname.includes('/admin');
+  const isConsultation = location.pathname.includes('/consultation/');
+  const isChat = location.pathname.includes('/doctor/consultations/') || location.pathname.includes('/patient/consultations');
+  
+  const hideNav = isAdmin || isChat;
+  const hideFooter = isDashboard || isAdmin || isChat || isConsultation;
 
   return (
     <>
       <ScrollToTop />
-      {!isAdmin && <Navbar/>}
-      <div className={!isAdmin ? "pt-20 App" : "App"}>
+      {!hideNav && <Navbar/>}
+      <div className={!hideNav ? "pt-20 App" : "App"}>
          <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
@@ -63,6 +79,12 @@ function AppContent() {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/patient/home" element={<PatientHome />} />
+          <Route path="/patient/consultations" element={<MyConsultations />} />
+          <Route path="/doctor/:id" element={<DoctorProfileView />} />
+          <Route path="/consultation/:doctorId" element={<ConsultationFlow />} />
+          <Route path="/doctor/consultations" element={<ConsultationRequests />} />
+          <Route path="/doctor/consultations/:id" element={<ConsultationChat />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/diagnosis-results" element={<DiagnosisResults />} />
@@ -96,10 +118,11 @@ function AppContent() {
             <Route path="media" element={<MediaManager />} />
             <Route path="messages" element={<ContactMessages />} />
             <Route path="users" element={<AdminUsers />} />
+            <Route path="escrow" element={<EscrowManager />} />
           </Route>
         </Routes>
       </div>
-      {!isDashboard && !isAdmin && <Footer />}
+      {!hideFooter && <Footer />}
       <FloatingChatbot />
     </>
   );
