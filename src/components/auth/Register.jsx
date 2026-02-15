@@ -21,7 +21,11 @@ const Register = () => {
     Address: '',
     City: '',
     ZipCode: '',
+    Governorate: '',
+    AnalysisCenter: '',
     IdentificationImage: null,
+    CriminalRecordImage: null,
+    DrugTestImage: null,
     termsAccepted: false
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -36,6 +40,45 @@ const Register = () => {
   
   // const { login } = useAuth(); // Not logging in directly anymore
   const navigate = useNavigate();
+
+  const governoratesAndCenters = {
+    "Cairo": "Cairo Educational Hospital - Testing Unit",
+    "Giza": "El Harm Hospital - Drug Analysis Center",
+    "Alexandria": "Alexandria Fever Hospital - Central Lab",
+    "Dakahlia": "Mansoura General Hospital - Narcotics Lab",
+    "Red Sea": "Hurghada General Hospital",
+    "Beheira": "Damanhour Medical National Institute",
+    "Fayoum": "Fayoum General Hospital",
+    "Gharbia": "Tanta Mental Health Hospital",
+    "Ismailia": "Ismailia Chest Hospital",
+    "Menofia": "Shebin El Kom Mental Health Hospital",
+    "Minya": "Minya Mental Health Hospital",
+    "Qalyubia": "Benha Mental Health Hospital",
+    "New Valley": "Kharga General Hospital",
+    "Suez": "Suez Fever Hospital",
+    "Aswan": "Aswan Mental Health Hospital",
+    "Assiut": "Assiut Mental Health Hospital",
+    "Beni Suef": "Beni Suef Mental Health Hospital",
+    "Port Said": "Port Said Psychiatric Hospital",
+    "Damietta": "Damietta Mental Health Hospital",
+    "Sharkia": "Zagazig Mental Health Hospital",
+    "South Sinai": "Tor Sinai General Hospital",
+    "Kafr El Sheikh": "Kafr El Sheikh Mental Health Hospital",
+    "Matrouh": "Matrouh General Hospital",
+    "Luxor": "Luxor Mental Health Hospital",
+    "Qena": "Qena Mental Health Hospital",
+    "North Sinai": "Arish General Hospital",
+    "Sohag": "Sohag Mental Health Hospital"
+  };
+
+  useEffect(() => {
+    if (formData.Governorate) {
+      setFormData(prev => ({
+        ...prev,
+        AnalysisCenter: governoratesAndCenters[formData.Governorate] || ''
+      }));
+    }
+  }, [formData.Governorate]);
 
   useEffect(() => {
     setPageLoaded(true);
@@ -139,6 +182,14 @@ const Register = () => {
         if (formData.IdentificationImage) {
             data.append('IdentificationImage', formData.IdentificationImage);
         }
+        if (formData.CriminalRecordImage) {
+            data.append('CriminalRecordImage', formData.CriminalRecordImage);
+        }
+        if (formData.DrugTestImage) {
+            data.append('DrugTestImage', formData.DrugTestImage);
+        }
+        data.append('Governorate', formData.Governorate);
+        data.append('AnalysisCenter', formData.AnalysisCenter);
 
         const response = await register(data);
         
@@ -460,6 +511,107 @@ const Register = () => {
           </label>
         </div>
         {errors.IdentificationImage && <p className="text-xs text-red-500">{errors.IdentificationImage}</p>}
+      </div>
+
+      {/* Governorate & Analysis Center */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-gray-900">Governorate *</label>
+          <select
+            name="Governorate"
+            value={formData.Governorate}
+            onChange={handleChange}
+            className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-sm transition-all ${
+              errors.Governorate ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50'
+            }`}
+          >
+            <option value="">Select Governorate</option>
+            {Object.keys(governoratesAndCenters).map(gov => (
+              <option key={gov} value={gov}>{gov}</option>
+            ))}
+          </select>
+          {errors.Governorate && <p className="text-xs text-red-500">{errors.Governorate}</p>}
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-gray-900">Analysis Center</label>
+          <div className="w-full px-4 py-3 bg-blue-50 border border-blue-100 rounded-xl text-sm text-blue-800 font-medium">
+            {formData.AnalysisCenter || 'Select a governorate first'}
+          </div>
+        </div>
+      </div>
+
+      {/* Criminal Record & Drug Test Uploads */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+        {/* Criminal Record */}
+        <div className="space-y-3">
+          <h3 className="flex items-center text-sm font-semibold text-gray-900">
+            <FaUpload className="w-4 h-4 mr-2 text-primary" />
+            Criminal Record (فيش وتشبيه)
+          </h3>
+          <div className="relative">
+            <input
+              type="file"
+              name="CriminalRecordImage"
+              id="CriminalRecordImage"
+              className="hidden"
+              accept="image/*"
+              onChange={handleChange}
+            />
+            <label 
+              htmlFor="CriminalRecordImage"
+              className={`flex flex-col items-center justify-center w-full p-4 border-2 border-dashed rounded-xl cursor-pointer transition-all ${
+                formData.CriminalRecordImage ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-primary/50 hover:bg-gray-50'
+              }`}
+            >
+              {formData.CriminalRecordImage ? (
+                 <div className="flex items-center text-primary">
+                   <FaUpload className="w-4 h-4 mr-2" />
+                   <span className="text-xs font-medium truncate max-w-[120px]">{formData.CriminalRecordImage.name}</span>
+                 </div>
+              ) : (
+                <div className="text-center">
+                  <p className="text-xs text-gray-500">Upload Image</p>
+                </div>
+              )}
+            </label>
+          </div>
+        </div>
+
+        {/* Drug Test */}
+        <div className="space-y-3">
+          <h3 className="flex items-center text-sm font-semibold text-gray-900">
+            <FaUpload className="w-4 h-4 mr-2 text-primary" />
+            Drug Test (تحليل مخدرات)
+          </h3>
+          <div className="relative">
+            <input
+              type="file"
+              name="DrugTestImage"
+              id="DrugTestImage"
+              className="hidden"
+              accept="image/*"
+              onChange={handleChange}
+            />
+            <label 
+              htmlFor="DrugTestImage"
+              className={`flex flex-col items-center justify-center w-full p-4 border-2 border-dashed rounded-xl cursor-pointer transition-all ${
+                formData.DrugTestImage ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-primary/50 hover:bg-gray-50'
+              }`}
+            >
+              {formData.DrugTestImage ? (
+                 <div className="flex items-center text-primary">
+                   <FaUpload className="w-4 h-4 mr-2" />
+                   <span className="text-xs font-medium truncate max-w-[120px]">{formData.DrugTestImage.name}</span>
+                 </div>
+              ) : (
+                <div className="text-center">
+                  <p className="text-xs text-gray-500">Upload Image</p>
+                </div>
+              )}
+            </label>
+          </div>
+        </div>
       </div>
 
       {/* Terms */}

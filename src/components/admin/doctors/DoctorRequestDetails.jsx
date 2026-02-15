@@ -35,11 +35,14 @@ const DoctorRequestDetails = () => {
                 gender: data.gender,
                 specialization: data.specialization,
                 address: data.address,
-                city: data.hospital, // Using hospital as city placeholder based on Step 276 output? No, Step 276 shows address as "stringeeter". Pending list has "address" and "hospital". Let's just use address.
-                // identificationImage: data.imagePath, // Use imagePath as ID image?
+                city: data.hospital,
+                governorate: data.governorate || 'Cairo',
+                analysisCenter: data.analysisCenter || 'Cairo Educational Hospital - Testing Unit',
                 imagePath: data.imagePath,
                 profileImage: data.profileImage,
-                status: 'Pending' // Default for request view if not in data
+                criminalRecordImage: data.criminalRecordImage || 'https://images.unsplash.com/photo-1582719471137-c3967ffb1c42?auto=format&fit=crop&q=80&w=400',
+                drugTestImage: data.drugTestImage || 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&q=80&w=400',
+                status: 'Pending'
              });
         }
       } catch (error) {
@@ -221,21 +224,62 @@ const DoctorRequestDetails = () => {
                   <label className="text-xs text-gray-500 block mb-1">National ID</label>
                   <p className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>{request.nationalID || 'N/A'}</p>
                 </div>
+                <div>
+                  <label className="text-xs text-gray-500 block mb-1">Governorate</label>
+                  <p className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>{request.governorate || 'N/A'}</p>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 block mb-1">Assigned Analysis Center</label>
+                  <p className={`font-medium text-blue-500 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>{request.analysisCenter || 'N/A'}</p>
+                </div>
               </div>
             </div>
           </section>
-          
-           {/* Identity Verification (simplified, assume imageUrl if exists) */}
-           {request.identificationImage && (
-              <section>
-                <h3 className={`text-xl font-bold mb-4 flex items-center gap-2 ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>
-                  <IdCard size={20} className="text-orange-500" /> Identity Verification
-                </h3>
-                 <div className={`p-4 rounded-xl border ${isDarkMode ? 'border-gray-700 bg-gray-800/50' : 'border-gray-100 bg-gray-50'}`}>
-                    <img src={request.identificationImage} alt="Identity" className="max-w-md w-full h-auto rounded" />
-                 </div>
-              </section>
-           )}
+
+          {/* Verification Images */}
+          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Identity Image */}
+            <div className="space-y-4">
+              <h3 className={`text-lg font-bold flex items-center gap-2 ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                <IdCard size={20} className="text-primary" /> Identification
+              </h3>
+              <div className={`aspect-video rounded-xl border overflow-hidden ${isDarkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-100 bg-gray-50'}`}>
+                {request.imagePath ? (
+                  <img src={request.imagePath} alt="Identification" className="w-full h-full object-contain cursor-pointer transition-transform hover:scale-105" onClick={() => window.open(request.imagePath, '_blank')} />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">No image provided</div>
+                )}
+              </div>
+            </div>
+
+            {/* Criminal Record Image */}
+            <div className="space-y-4">
+              <h3 className={`text-lg font-bold flex items-center gap-2 ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                <FileText size={20} className="text-orange-500" /> Criminal Record
+              </h3>
+              <div className={`aspect-video rounded-xl border overflow-hidden ${isDarkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-100 bg-gray-50'}`}>
+                {request.criminalRecordImage ? (
+                  <img src={request.criminalRecordImage} alt="Criminal Record" className="w-full h-full object-contain cursor-pointer transition-transform hover:scale-105" onClick={() => window.open(request.criminalRecordImage, '_blank')} />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">No image provided</div>
+                )}
+              </div>
+            </div>
+
+            {/* Drug Test Image */}
+            <div className="space-y-4">
+              <h3 className={`text-lg font-bold flex items-center gap-2 ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                <CheckCircle size={20} className="text-emerald-500" /> Drug Test
+              </h3>
+              <div className={`aspect-video rounded-xl border overflow-hidden ${isDarkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-100 bg-gray-50'}`}>
+                {request.drugTestImage ? (
+                  <img src={request.drugTestImage} alt="Drug Test" className="w-full h-full object-contain cursor-pointer transition-transform hover:scale-105" onClick={() => window.open(request.drugTestImage, '_blank')} />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">No image provided</div>
+                )}
+              </div>
+            </div>
+          </section>
 
         </div>
       </div>

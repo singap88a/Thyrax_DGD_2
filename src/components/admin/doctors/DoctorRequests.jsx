@@ -211,10 +211,17 @@ const DoctorRequests = () => {
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>City:</span>
                 <span className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
                   {request.address || request.city || 'N/A'}
                 </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Governorate:</span>
+                <span className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>{request.governorate || 'Cairo'}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Center:</span>
+                <span className={`font-medium text-blue-500 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>{request.analysisCenter || 'Cairo Educational Hospital'}</span>
               </div>
             </div>
 
@@ -341,24 +348,68 @@ const DoctorRequests = () => {
                                 <label className="text-xs text-gray-500">Hospital/Clinic</label>
                                 <p className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{selectedRequest.hospital || 'N/A'}</p>
                             </div>
+                            <div>
+                                <label className="text-xs text-gray-500">Governorate</label>
+                                <p className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{selectedRequest.governorate || 'Cairo'}</p>
+                            </div>
+                            <div>
+                                <label className="text-xs text-gray-500">Assigned Analysis Center</label>
+                                <p className={`font-medium text-blue-500 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                                    {selectedRequest.analysisCenter || 'Cairo Educational Hospital - Testing Unit'}
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Identity Image */}
-                {selectedRequest.imagePath && (
-                    <div>
-                         <h3 className={`font-semibold mb-3 ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>Identity Document</h3>
-                         <div className="border rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800 flex justify-center p-4">
-                             <img 
-                                src={`https://thyrocarex.runasp.net/${selectedRequest.imagePath}`} 
-                                alt="Identity" 
-                                className="max-w-full h-auto max-h-64 object-contain rounded"
-                                onError={(e) => {e.target.style.display='none'}}
-                             />
-                         </div>
+                {/* Verification Documents */}
+                <div className="space-y-4">
+                    <h3 className={`font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>Verification Documents</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {/* Identity Image */}
+                        <div className="space-y-2 text-center">
+                            <label className="text-xs text-gray-500">Identity Document</label>
+                            <div className="border rounded-xl aspect-video overflow-hidden bg-gray-50 dark:bg-gray-800 flex items-center justify-center p-2 shadow-sm">
+                                {selectedRequest.imagePath ? (
+                                    <img 
+                                        src={`https://thyrocarex.runasp.net/${selectedRequest.imagePath}`} 
+                                        alt="Identity" 
+                                        className="w-full h-full object-contain rounded cursor-pointer transition-transform hover:scale-110"
+                                        onClick={() => window.open(`https://thyrocarex.runasp.net/${selectedRequest.imagePath}`, '_blank')}
+                                    />
+                                ) : (
+                                    <div className="text-gray-400 text-xs text-center"><IdCard className="w-8 h-8 mx-auto mb-1 opacity-50" /> No ID Image</div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Criminal Record */}
+                        <div className="space-y-2 text-center">
+                            <label className="text-xs text-gray-500">Criminal Record</label>
+                            <div className="border rounded-xl aspect-video overflow-hidden bg-gray-50 dark:bg-gray-800 flex items-center justify-center p-2 shadow-sm">
+                                <img 
+                                    src={selectedRequest.criminalRecordImage || 'https://images.unsplash.com/photo-1582719471137-c3967ffb1c42?auto=format&fit=crop&q=80&w=400'} 
+                                    alt="Criminal Record" 
+                                    className="w-full h-full object-contain rounded cursor-pointer transition-transform hover:scale-110"
+                                    onClick={() => window.open(selectedRequest.criminalRecordImage || 'https://images.unsplash.com/photo-1582719471137-c3967ffb1c42?auto=format&fit=crop&q=80&w=400', '_blank')}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Drug Test */}
+                        <div className="space-y-2 text-center">
+                            <label className="text-xs text-gray-500">Drug Test</label>
+                            <div className="border rounded-xl aspect-video overflow-hidden bg-gray-50 dark:bg-gray-800 flex items-center justify-center p-2 shadow-sm">
+                                <img 
+                                    src={selectedRequest.drugTestImage || 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&q=80&w=400'} 
+                                    alt="Drug Test" 
+                                    className="w-full h-full object-contain rounded cursor-pointer transition-transform hover:scale-110"
+                                    onClick={() => window.open(selectedRequest.drugTestImage || 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&q=80&w=400', '_blank')}
+                                />
+                            </div>
+                        </div>
                     </div>
-                )}
+                </div>
             </div>
 
             {/* Modal Footer */}
