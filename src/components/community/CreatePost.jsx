@@ -1,16 +1,43 @@
 import React, { useState } from 'react';
 import { FaImage, FaPaperPlane, FaSmile } from 'react-icons/fa';
+import communityService from '../../services/communityService';
+import toast from 'react-hot-toast';
 
-const CreatePost = () => {
+const CreatePost = ({ onPostCreated }) => {
   const [content, setContent] = useState('');
-  const [image, setImage] = useState<File | null>(null);
+  const [image, setImage] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Logic to submit post
-    console.log('Post submitted:', content, image);
-    setContent('');
-    setImage(null);
+    
+    if (!content.trim() && !image) {
+      toast.error('Please add some content or an image');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await communityService.addPost(content, image);
+      
+      if (response.succeeded) {
+        toast.success('Post created successfully!');
+        setContent('');
+        setImage(null);
+        
+        // Callback to refresh posts list
+        if (onPostCreated) {
+          onPostCreated();
+        }
+      } else {
+        toast.error(response.message || 'Failed to create post');
+      }
+    } catch (error) {
+      console.error('Error creating post:', error);
+      toast.error('Failed to create post. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -28,6 +55,7 @@ const CreatePost = () => {
               placeholder="Share your medical insights or updates..."
               value={content}
               onChange={(e) => setContent(e.target.value)}
+              disabled={loading}
             />
           </div>
         </div>
@@ -42,24 +70,25 @@ const CreatePost = () => {
                 className="hidden" 
                 accept="image/*"
                 onChange={(e) => setImage(e.target.files?.[0] || null)}
+                disabled={loading}
               />
             </label>
-            <button type="button" className="p-2 transition-all duration-300 rounded-lg text-gray-400 hover:text-primary hover:bg-primary/5">
+            <button type="button" className="p-2 transition-all duration-300 rounded-lg text-gray-400 hover:text-primary hover:bg-primary/5" disabled={loading}>
               <FaSmile className="w-5 h-5" />
             </button>
           </div>
           
           <button
             type="submit"
-            disabled={!content.trim() && !image}
+            disabled={(!content.trim() && !image) || loading}
             className={`flex items-center space-x-2 px-6 py-2 rounded-xl font-medium transition-all duration-300 transform hover:-translate-y-0.5 shadow-md ${
-              content.trim() || image 
+              (content.trim() || image) && !loading
                 ? "bg-primary text-white hover:bg-primaryHover hover:shadow-lg" 
                 : "bg-gray-100 text-gray-400 cursor-not-allowed"
             }`}
           >
             <FaPaperPlane className="w-4 h-4" />
-            <span>Post</span>
+            <span>{loading ? 'Posting...' : 'Post'}</span>
           </button>
         </div>
         
@@ -73,6 +102,8 @@ const CreatePost = () => {
             <button 
               onClick={() => setImage(null)}
               className="absolute top-2 right-2 p-1.5 bg-gray-900/50 text-white rounded-full hover:bg-gray-900 transition-colors"
+              type="button"
+              disabled={loading}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
